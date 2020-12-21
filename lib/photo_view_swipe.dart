@@ -10,7 +10,7 @@ class PhotoViewSwipe extends StatefulWidget {
 
     // Standard photo_view
     this.loadingBuilder,
-    this.loadFailedChild,
+    this.errorBuilder,
     this.backgroundDecoration,
     this.gaplessPlayback = false,
     this.heroAttributes,
@@ -38,7 +38,7 @@ class PhotoViewSwipe extends StatefulWidget {
 
   // Standard photo_view
   final LoadingBuilder loadingBuilder;
-  final Widget loadFailedChild;
+  final ImageErrorWidgetBuilder errorBuilder;
   final Decoration backgroundDecoration;
   final bool gaplessPlayback;
   final PhotoViewHeroAttributes heroAttributes;
@@ -126,7 +126,7 @@ class _PhotoViewSwipeState extends State<PhotoViewSwipe> {
                       BoxDecoration(color: Colors.transparent),
                   scaleStateController: scaleStateController,
                   loadingBuilder: widget.loadingBuilder,
-                  loadFailedChild: widget.loadFailedChild,
+                  errorBuilder: widget.errorBuilder,
                   gaplessPlayback: widget.gaplessPlayback,
                   heroAttributes: widget.heroAttributes,
                   scaleStateChangedCallback: widget.scaleStateChangedCallback,
