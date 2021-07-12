@@ -2,71 +2,72 @@ import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 
 class PhotoViewSwipe extends StatefulWidget {
-  PhotoViewSwipe({
-    Key key,
-    @required this.imageProvider,
-    this.dragBgColor, // default Colors.black.withOpacity(0.5)
-    this.dragDistance, // default 160
-
-    // Standard photo_view
-    this.loadingBuilder,
-    this.errorBuilder,
-    this.backgroundDecoration,
-    this.gaplessPlayback = false,
-    this.heroAttributes,
-    this.scaleStateChangedCallback,
-    this.enableRotation = false,
-    this.controller,
-    this.maxScale,
-    this.minScale,
-    this.initialScale,
-    this.basePosition,
-    this.scaleStateCycle,
-    this.onTapUp,
-    this.onTapDown,
-    this.customSize,
-    this.gestureDetectorBehavior,
-    this.tightMode,
-    this.filterQuality,
-  })  : child = null,
-        childSize = null,
-        super(key: key);
-
   final ImageProvider imageProvider;
-  final Color dragBgColor;
-  final double dragDistance;
+  final Color? dragBgColor;
+  final double? dragDistance;
 
   // Standard photo_view
-  final LoadingBuilder loadingBuilder;
-  final ImageErrorWidgetBuilder errorBuilder;
-  final Decoration backgroundDecoration;
+  final LoadingBuilder? loadingBuilder;
+  final ImageErrorWidgetBuilder? errorBuilder;
+  final Decoration? backgroundDecoration;
   final bool gaplessPlayback;
-  final PhotoViewHeroAttributes heroAttributes;
-  final Size customSize;
-  final ValueChanged<PhotoViewScaleState> scaleStateChangedCallback;
+  final PhotoViewHeroAttributes? heroAttributes;
+  final ValueChanged<PhotoViewScaleState>? scaleStateChangedCallback;
   final bool enableRotation;
-  final Widget child;
-  final Size childSize;
+  final PhotoViewControllerBase? controller;
   final dynamic maxScale;
   final dynamic minScale;
   final dynamic initialScale;
-  final PhotoViewControllerBase controller;
-  final Alignment basePosition;
-  final ScaleStateCycle scaleStateCycle;
-  final PhotoViewImageTapUpCallback onTapUp;
-  final PhotoViewImageTapDownCallback onTapDown;
-  final HitTestBehavior gestureDetectorBehavior;
-  final bool tightMode;
-  final FilterQuality filterQuality;
+  final Alignment? basePosition;
+  final ScaleStateCycle? scaleStateCycle;
+  final PhotoViewImageTapUpCallback? onTapUp;
+  final PhotoViewImageTapDownCallback? onTapDown;
+  final Size? customSize;
+  final HitTestBehavior? gestureDetectorBehavior;
+  final bool? tightMode;
+  final FilterQuality? filterQuality;
+
+  final Widget? child;
+  final Size? childSize;
+
+  PhotoViewSwipe(
+      {Key? key,
+      required this.imageProvider,
+      this.dragBgColor = Colors.black, // default Colors.black.withOpacity(0.5)
+      this.dragDistance = 160, // default 160
+
+      // Standard photo_view
+      this.loadingBuilder,
+      this.errorBuilder,
+      this.backgroundDecoration,
+      this.gaplessPlayback = false,
+      this.heroAttributes,
+      this.scaleStateChangedCallback,
+      this.enableRotation = false,
+      this.controller,
+      this.maxScale,
+      this.minScale,
+      this.initialScale,
+      this.basePosition,
+      this.scaleStateCycle,
+      this.onTapUp,
+      this.onTapDown,
+      this.customSize,
+      this.gestureDetectorBehavior,
+      this.tightMode,
+      this.filterQuality})
+      : child = null,
+        childSize = null,
+        super(key: key);
 
   @override
   _PhotoViewSwipeState createState() => _PhotoViewSwipeState();
 }
 
 class _PhotoViewSwipeState extends State<PhotoViewSwipe> {
-  Offset _position = Offset(0.0, 0.0);
+  Offset _position = const Offset(0.0, 0.0);
   bool _isZoomed = false;
-  PhotoViewScaleStateController scaleStateController;
+  late PhotoViewScaleStateController scaleStateController;
 
   @override
   void initState() {
@@ -83,14 +84,14 @@ class _PhotoViewSwipeState extends State<PhotoViewSwipe> {
 
   @override
   void dispose() {
-    scaleStateController?.dispose();
+    scaleStateController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: widget.dragBgColor ?? Colors.black.withOpacity(0.5),
+      backgroundColor: widget.dragBgColor,
       body: Stack(
         children: [
           Positioned(
@@ -106,7 +107,7 @@ class _PhotoViewSwipeState extends State<PhotoViewSwipe> {
               onVerticalDragEnd: !_isZoomed
                   ? (details) {
                       double pixelsPerSecond = _position.dy.abs();
-                      if (pixelsPerSecond > (widget.dragDistance ?? 160)) {
+                      if (pixelsPerSecond > widget.dragDistance!) {
                         Navigator.pop(context);
                       } else {
                         setState(() => _position = Offset(0.0, 0.0));
@@ -116,14 +117,14 @@ class _PhotoViewSwipeState extends State<PhotoViewSwipe> {
               child: Container(
                 decoration: _position.dy == 0.0
                     ? (widget.backgroundDecoration ??
-                        BoxDecoration(color: Colors.black))
+                        const BoxDecoration(color: Colors.black))
                     : null,
                 height: MediaQuery.of(context).size.height,
                 width: MediaQuery.of(context).size.width,
                 child: PhotoView(
                   imageProvider: widget.imageProvider,
                   backgroundDecoration:
-                      BoxDecoration(color: Colors.transparent),
+                      const BoxDecoration(color: Colors.transparent),
                   scaleStateController: scaleStateController,
                   loadingBuilder: widget.loadingBuilder,
                   errorBuilder: widget.errorBuilder,
