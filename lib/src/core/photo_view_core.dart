@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-
 import 'package:photo_view/photo_view.dart'
     show
         PhotoViewScaleState,
@@ -11,9 +10,9 @@ import 'package:photo_view/photo_view.dart'
 import 'package:photo_view/src/controller/photo_view_controller.dart';
 import 'package:photo_view/src/controller/photo_view_controller_delegate.dart';
 import 'package:photo_view/src/controller/photo_view_scalestate_controller.dart';
-import 'package:photo_view/src/utils/photo_view_utils.dart';
 import 'package:photo_view/src/core/photo_view_gesture_detector.dart';
 import 'package:photo_view/src/core/photo_view_hit_corners.dart';
+import 'package:photo_view/src/utils/photo_view_utils.dart';
 
 const _defaultDecoration = const BoxDecoration(
   color: const Color.fromRGBO(0, 0, 0, 1.0),
@@ -26,6 +25,7 @@ class PhotoViewCore extends StatefulWidget {
     Key? key,
     required this.imageProvider,
     required this.backgroundDecoration,
+    required this.semanticLabel,
     required this.gaplessPlayback,
     required this.heroAttributes,
     required this.enableRotation,
@@ -42,7 +42,8 @@ class PhotoViewCore extends StatefulWidget {
     required this.filterQuality,
     required this.disableGestures,
     required this.enablePanAlways,
-  })   : customChild = null,
+    required this.strictScale,
+  })  : customChild = null,
         super(key: key);
 
   const PhotoViewCore.customChild({
@@ -64,12 +65,15 @@ class PhotoViewCore extends StatefulWidget {
     required this.filterQuality,
     required this.disableGestures,
     required this.enablePanAlways,
-  })   : imageProvider = null,
+    required this.strictScale,
+  })  : imageProvider = null,
+        semanticLabel = null,
         gaplessPlayback = false,
         super(key: key);
 
   final Decoration? backgroundDecoration;
   final ImageProvider? imageProvider;
+  final String? semanticLabel;
   final bool? gaplessPlayback;
   final PhotoViewHeroAttributes? heroAttributes;
   final bool enableRotation;
@@ -89,6 +93,7 @@ class PhotoViewCore extends StatefulWidget {
   final bool tightMode;
   final bool disableGestures;
   final bool enablePanAlways;
+  final bool strictScale;
 
   final FilterQuality filterQuality;
 
@@ -109,14 +114,10 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   double? _scaleBefore;
   double? _rotationBefore;
 
-  late final AnimationController _scaleAnimationController =
-      AnimationController(vsync: this)
-        ..addListener(handleScaleAnimation)
-        ..addStatusListener(onAnimationStatus);
+  late final AnimationController _scaleAnimationController;
   Animation<double>? _scaleAnimation;
 
-  late final AnimationController _positionAnimationController =
-      AnimationController(vsync: this)..addListener(handlePositionAnimate);
+  late final AnimationController _positionAnimationController;
   Animation<Offset>? _positionAnimation;
 
   late final AnimationController _rotationAnimationController =
@@ -151,6 +152,11 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   void onScaleUpdate(ScaleUpdateDetails details) {
     final double newScale = _scaleBefore! * details.scale;
     final Offset delta = details.focalPoint - _normalizedPosition!;
+
+    if (widget.strictScale && (newScale > widget.scaleBoundaries.maxScale ||
+        newScale < widget.scaleBoundaries.minScale)) {
+      return;
+    }
 
     updateScaleStateFromNewScale(newScale);
 
@@ -262,6 +268,12 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     addAnimateOnScaleStateUpdate(animateOnScaleStateUpdate);
 
     cachedScaleBoundaries = widget.scaleBoundaries;
+
+    _scaleAnimationController = AnimationController(vsync: this)
+      ..addListener(handleScaleAnimation)
+      ..addStatusListener(onAnimationStatus);
+    _positionAnimationController = AnimationController(vsync: this)
+      ..addListener(handlePositionAnimate);
   }
 
   void animateOnScaleStateUpdate(double prevScale, double nextScale) {
@@ -378,6 +390,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
         ? widget.customChild!
         : Image(
             image: widget.imageProvider!,
+            semanticLabel: widget.semanticLabel,
             gaplessPlayback: widget.gaplessPlayback ?? false,
             filterQuality: widget.filterQuality,
             width: scaleBoundaries.childSize.width * scale,

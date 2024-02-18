@@ -38,6 +38,7 @@ export 'src/utils/photo_view_hero_attributes.dart';
 ///            ),
 ///          ),
 ///  backgroundDecoration: BoxDecoration(color: Colors.black),
+///  semanticLabel: 'Some label',
 ///  gaplessPlayback: false,
 ///  customSize: MediaQuery.of(context).size,
 ///  heroAttributes: const HeroAttributes(
@@ -68,6 +69,7 @@ export 'src/utils/photo_view_hero_attributes.dart';
 ///  ),
 ///  childSize: const Size(220.0, 250.0),
 ///  backgroundDecoration: BoxDecoration(color: Colors.black),
+///  semanticLabel: 'Some label',
 ///  gaplessPlayback: false,
 ///  customSize: MediaQuery.of(context).size,
 ///  heroAttributes: const HeroAttributes(
@@ -237,6 +239,8 @@ class PhotoView extends StatefulWidget {
     required this.imageProvider,
     this.loadingBuilder,
     this.backgroundDecoration,
+    this.wantKeepAlive = false,
+    this.semanticLabel,
     this.gaplessPlayback = false,
     this.heroAttributes,
     this.scaleStateChangedCallback,
@@ -258,6 +262,7 @@ class PhotoView extends StatefulWidget {
     this.disableGestures,
     this.errorBuilder,
     this.enablePanAlways,
+    this.strictScale,
   })  : child = null,
         childSize = null,
         super(key: key);
@@ -273,6 +278,7 @@ class PhotoView extends StatefulWidget {
     required this.child,
     this.childSize,
     this.backgroundDecoration,
+    this.wantKeepAlive = false,
     this.heroAttributes,
     this.scaleStateChangedCallback,
     this.enableRotation = false,
@@ -292,8 +298,10 @@ class PhotoView extends StatefulWidget {
     this.filterQuality,
     this.disableGestures,
     this.enablePanAlways,
+    this.strictScale,
   })  : errorBuilder = null,
         imageProvider = null,
+        semanticLabel = null,
         gaplessPlayback = false,
         loadingBuilder = null,
         super(key: key);
@@ -311,6 +319,16 @@ class PhotoView extends StatefulWidget {
 
   /// Changes the background behind image, defaults to `Colors.black`.
   final BoxDecoration? backgroundDecoration;
+
+  /// This is used to keep the state of an image in the gallery (e.g. scale state).
+  /// `false` -> resets the state (default)
+  /// `true`  -> keeps the state
+  final bool wantKeepAlive;
+
+  /// A Semantic description of the image.
+  ///
+  /// Used to provide a description of the image to TalkBack on Android, and VoiceOver on iOS.
+  final String? semanticLabel;
 
   /// This is used to continue showing the old image (`true`), or briefly show
   /// nothing (`false`), when the `imageProvider` changes. By default it's set
@@ -394,6 +412,9 @@ class PhotoView extends StatefulWidget {
   /// Useful when you want to drag a widget without restrictions.
   final bool? enablePanAlways;
 
+  /// Enable strictScale will restrict user scale gesture to the maxScale and minScale values.
+  final bool? strictScale;
+
   bool get _isCustomChild {
     return child != null;
   }
@@ -404,7 +425,8 @@ class PhotoView extends StatefulWidget {
   }
 }
 
-class _PhotoViewState extends State<PhotoView> {
+class _PhotoViewState extends State<PhotoView>
+    with AutomaticKeepAliveClientMixin {
   // image retrieval
 
   // controller
@@ -479,6 +501,7 @@ class _PhotoViewState extends State<PhotoView> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return LayoutBuilder(
       builder: (
         BuildContext context,
@@ -512,11 +535,13 @@ class _PhotoViewState extends State<PhotoView> {
                 filterQuality: widget.filterQuality,
                 disableGestures: widget.disableGestures,
                 enablePanAlways: widget.enablePanAlways,
+                strictScale: widget.strictScale,
               )
             : ImageWrapper(
                 imageProvider: widget.imageProvider!,
                 loadingBuilder: widget.loadingBuilder,
                 backgroundDecoration: backgroundDecoration,
+                semanticLabel: widget.semanticLabel,
                 gaplessPlayback: widget.gaplessPlayback,
                 heroAttributes: widget.heroAttributes,
                 scaleStateChangedCallback: widget.scaleStateChangedCallback,
@@ -538,10 +563,14 @@ class _PhotoViewState extends State<PhotoView> {
                 disableGestures: widget.disableGestures,
                 errorBuilder: widget.errorBuilder,
                 enablePanAlways: widget.enablePanAlways,
+                strictScale: widget.strictScale,
               );
       },
     );
   }
+
+  @override
+  bool get wantKeepAlive => widget.wantKeepAlive;
 }
 
 /// The default [ScaleStateCycle]

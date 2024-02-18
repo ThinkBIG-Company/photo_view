@@ -70,25 +70,6 @@ class _PhotoViewSwipeState extends State<PhotoViewSwipe> {
   late PhotoViewScaleStateController scaleStateController;
 
   @override
-  void initState() {
-    scaleStateController = PhotoViewScaleStateController();
-    scaleStateController.outputScaleStateStream.listen((event) {
-      setState(() {
-        _isZoomed = event != PhotoViewScaleState.zoomedOut &&
-            event != PhotoViewScaleState.initial;
-      });
-    });
-
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    scaleStateController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: widget.dragBgColor,
@@ -100,17 +81,21 @@ class _PhotoViewSwipeState extends State<PhotoViewSwipe> {
             child: GestureDetector(
               onVerticalDragUpdate: !_isZoomed
                   ? (details) {
-                      setState(() => _position =
-                          Offset(0.0, _position.dy + details.delta.dy));
+                      setState(
+                        () => _position =
+                            Offset(0.0, _position.dy + details.delta.dy),
+                      );
                     }
                   : null,
               onVerticalDragEnd: !_isZoomed
                   ? (details) {
-                      double pixelsPerSecond = _position.dy.abs();
+                      final double pixelsPerSecond = _position.dy.abs();
                       if (pixelsPerSecond > widget.dragDistance!) {
                         Navigator.pop(context);
                       } else {
-                        setState(() => _position = Offset(0.0, 0.0));
+                        setState(
+                          () => _position = const Offset(0.0, 0.0),
+                        );
                       }
                     }
                   : null,
@@ -151,5 +136,24 @@ class _PhotoViewSwipeState extends State<PhotoViewSwipe> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    scaleStateController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    scaleStateController = PhotoViewScaleStateController();
+    scaleStateController.outputScaleStateStream.listen((event) {
+      setState(() {
+        _isZoomed = event != PhotoViewScaleState.zoomedOut &&
+            event != PhotoViewScaleState.initial;
+      });
+    });
+
+    super.initState();
   }
 }

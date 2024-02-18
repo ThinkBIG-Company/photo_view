@@ -28,7 +28,7 @@ typedef PhotoViewGalleryBuilder = PhotoViewGalleryPageOptions Function(
 ///
 /// Some of [PhotoView] constructor options are passed direct to [PhotoViewGallery] constructor. Those options will affect the gallery in a whole.
 ///
-/// Some of the options may be defined to each image individually, such as `initialScale` or `heroAttributes`. Those must be passed via each [PhotoViewGalleryPageOptions].
+/// Some of the options may be defined to each image individually, such as `initialScale` or `PhotoViewHeroAttributes`. Those must be passed via each [PhotoViewGalleryPageOptions].
 ///
 /// Example of usage as a list of options:
 /// ```
@@ -36,11 +36,11 @@ typedef PhotoViewGalleryBuilder = PhotoViewGalleryPageOptions Function(
 ///   pageOptions: <PhotoViewGalleryPageOptions>[
 ///     PhotoViewGalleryPageOptions(
 ///       imageProvider: AssetImage("assets/gallery1.jpg"),
-///       heroAttributes: const HeroAttributes(tag: "tag1"),
+///       heroAttributes: const PhotoViewHeroAttributes(tag: "tag1"),
 ///     ),
 ///     PhotoViewGalleryPageOptions(
 ///       imageProvider: AssetImage("assets/gallery2.jpg"),
-///       heroAttributes: const HeroAttributes(tag: "tag2"),
+///       heroAttributes: const PhotoViewHeroAttributes(tag: "tag2"),
 ///       maxScale: PhotoViewComputedScale.contained * 0.3
 ///     ),
 ///     PhotoViewGalleryPageOptions(
@@ -106,6 +106,7 @@ class PhotoViewGallery extends StatefulWidget {
     required this.pageOptions,
     this.loadingBuilder,
     this.backgroundDecoration,
+    this.wantKeepAlive = false,
     this.gaplessPlayback = false,
     this.reverse = false,
     this.pageController,
@@ -115,6 +116,7 @@ class PhotoViewGallery extends StatefulWidget {
     this.scrollPhysics,
     this.scrollDirection = Axis.horizontal,
     this.customSize,
+    this.allowImplicitScrolling = false,
   })  : itemCount = null,
         builder = null,
         super(key: key);
@@ -128,6 +130,7 @@ class PhotoViewGallery extends StatefulWidget {
     required this.builder,
     this.loadingBuilder,
     this.backgroundDecoration,
+    this.wantKeepAlive = false,
     this.gaplessPlayback = false,
     this.reverse = false,
     this.pageController,
@@ -137,6 +140,7 @@ class PhotoViewGallery extends StatefulWidget {
     this.scrollPhysics,
     this.scrollDirection = Axis.horizontal,
     this.customSize,
+    this.allowImplicitScrolling = false,
   })  : pageOptions = null,
         assert(itemCount != null),
         assert(builder != null),
@@ -159,6 +163,9 @@ class PhotoViewGallery extends StatefulWidget {
 
   /// Mirror to [PhotoView.backgroundDecoration]
   final BoxDecoration? backgroundDecoration;
+
+  /// Mirror to [PhotoView.wantKeepAlive]
+  final bool wantKeepAlive;
 
   /// Mirror to [PhotoView.gaplessPlayback]
   final bool gaplessPlayback;
@@ -183,6 +190,9 @@ class PhotoViewGallery extends StatefulWidget {
 
   /// The axis along which the [PageView] scrolls. Mirror to [PageView.scrollDirection]
   final Axis scrollDirection;
+
+  /// When user attempts to move it to the next element, focus will traverse to the next page in the page view.
+  final bool allowImplicitScrolling;
 
   bool get _isBuilder => builder != null;
 
@@ -226,6 +236,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
         itemBuilder: _buildItem,
         scrollDirection: widget.scrollDirection,
         physics: widget.scrollPhysics,
+        allowImplicitScrolling: widget.allowImplicitScrolling,
       ),
     );
   }
@@ -240,6 +251,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             child: pageOption.child,
             childSize: pageOption.childSize,
             backgroundDecoration: widget.backgroundDecoration,
+            wantKeepAlive: widget.wantKeepAlive,
             controller: pageOption.controller,
             scaleStateController: pageOption.scaleStateController,
             customSize: widget.customSize,
@@ -264,9 +276,11 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             imageProvider: pageOption.imageProvider,
             loadingBuilder: widget.loadingBuilder,
             backgroundDecoration: widget.backgroundDecoration,
+            wantKeepAlive: widget.wantKeepAlive,
             controller: pageOption.controller,
             scaleStateController: pageOption.scaleStateController,
             customSize: widget.customSize,
+            semanticLabel: pageOption.semanticLabel,
             gaplessPlayback: widget.gaplessPlayback,
             heroAttributes: pageOption.heroAttributes,
             scaleStateChangedCallback: scaleStateChangedCallback,
@@ -309,6 +323,7 @@ class PhotoViewGalleryPageOptions {
     Key? key,
     required this.imageProvider,
     this.heroAttributes,
+    this.semanticLabel,
     this.minScale,
     this.maxScale,
     this.initialScale,
@@ -330,6 +345,7 @@ class PhotoViewGalleryPageOptions {
 
   PhotoViewGalleryPageOptions.customChild({
     required this.child,
+    this.semanticLabel,
     this.childSize,
     this.heroAttributes,
     this.minScale,
@@ -354,6 +370,9 @@ class PhotoViewGalleryPageOptions {
 
   /// Mirror to [PhotoView.heroAttributes]
   final PhotoViewHeroAttributes? heroAttributes;
+
+  /// Mirror to [PhotoView.semanticLabel]
+  final String? semanticLabel;
 
   /// Mirror to [PhotoView.minScale]
   final dynamic minScale;
